@@ -1,4 +1,4 @@
-import { useReducer, useCallback } from 'react';
+import { useReducer, useCallback, useRef } from 'react';
 import { callStep } from '../api.js';
 import { checkATSCompatibility } from '../lib/ats-checker.js';
 import { cleanAIPhrases } from '../lib/ai-phrase-cleaner.js';
@@ -57,8 +57,10 @@ function compileSummary(attempt, outputs, scores = []) {
 
 export function usePipeline() {
   const [state, dispatch] = useReducer(reducer, INITIAL_STATE);
+  const runIdRef = useRef(0);
 
   const runPipeline = useCallback(async (inputs) => {
+    const runId = ++runIdRef.current;
     dispatch({ type: 'START', inputs });
 
     const { resume, jd, intensity } = inputs;
@@ -79,6 +81,7 @@ export function usePipeline() {
         currentStepLocal = 'jd-analysis';
         dispatch({ type: 'SET_STEP', step: currentStepLocal });
         const jdAnalysis = await callStep('jd-analysis', { jd });
+        if (runIdRef.current !== runId) return;
         dispatch({ type: 'SET_OUTPUT', key: 'jdAnalysis', value: jdAnalysis });
 
         // Step 2: ATS Check (local)
@@ -91,6 +94,7 @@ export function usePipeline() {
         currentStepLocal = 'resume-match';
         dispatch({ type: 'SET_STEP', step: currentStepLocal });
         const resumeMatch = await callStep('resume-match', { resume, jd, jdAnalysis });
+        if (runIdRef.current !== runId) return;
         dispatch({ type: 'SET_OUTPUT', key: 'resumeMatch', value: resumeMatch });
 
         // Step 4: Rewrite Bullets
@@ -99,6 +103,7 @@ export function usePipeline() {
         const rewrittenBullets = await callStep('rewrite-bullets', {
           resume, jd, jdAnalysis, matchResult: resumeMatch, intensity, criticFeedback,
         });
+        if (runIdRef.current !== runId) return;
         dispatch({ type: 'SET_OUTPUT', key: 'rewrittenBullets', value: rewrittenBullets });
 
         // Step 5: AI Phrase Cleanup (local)
@@ -113,6 +118,7 @@ export function usePipeline() {
         const criticReview = await callStep('critic-review', {
           resume, jd, jdAnalysis, matchResult: resumeMatch, rewrittenBullets, attempt,
         });
+        if (runIdRef.current !== runId) return;
         dispatch({ type: 'SET_OUTPUT', key: 'criticReview', value: criticReview });
 
         const currentOutputs = { jdAnalysis, atsCheck, resumeMatch, rewrittenBullets, aiPhraseCleanup, criticReview };
@@ -133,6 +139,7 @@ export function usePipeline() {
         criticFeedback = criticReview.issues;
 
       } catch (err) {
+        if (runIdRef.current !== runId) return;
         dispatch({ type: 'ERROR', error: { step: currentStepLocal, message: err.message } });
         return;
       }
@@ -149,7 +156,10 @@ export function usePipeline() {
     dispatch({ type: 'COMPLETE' });
   }, []);
 
-  const reset = useCallback(() => dispatch({ type: 'RESET' }), []);
+  const reset = useCallback(() => {
+    runIdRef.current++;
+    dispatch({ type: 'RESET' });
+  }, []);
 
   return { state, runPipeline, reset };
 }

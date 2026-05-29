@@ -24,7 +24,7 @@ export default function App() {
           <div className="flex items-start justify-between gap-4 rounded-lg border border-red-200 bg-red-50 px-4 py-3">
             <div>
               <p className="text-sm font-semibold text-red-800">
-                Error in step: <span className="font-mono">{error.step}</span>
+                Error in step: <span className="font-mono">{error.step ?? 'unknown'}</span>
               </p>
               <p className="text-sm text-red-700 mt-0.5">{error.message}</p>
             </div>
