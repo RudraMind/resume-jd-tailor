@@ -93,10 +93,10 @@ export default function InputScreen({ onRun }) {
             {INTENSITY_OPTIONS.map(opt => (
               <label
                 key={opt.key}
-                className={`flex items-start gap-3 p-4 border-2 rounded-lg cursor-pointer transition-colors
+                className={`flex items-start gap-3 p-4 rounded-lg cursor-pointer transition-colors
                   ${intensity === opt.key
-                    ? 'border-l-4 border-purple-500 bg-purple-50'
-                    : 'border-gray-200 bg-white hover:bg-gray-50'
+                    ? 'border-l-4 border border-purple-500 bg-purple-50'
+                    : 'border-2 border-gray-200 bg-white hover:bg-gray-50'
                   }`}
               >
                 <input
