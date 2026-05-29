@@ -21,26 +21,45 @@ export class AnthropicAdapter extends LLMAdapter {
   }
 
   async _call(systemPrompt, userContent, options = {}) {
-    const response = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': this.apiKey,
-        'anthropic-version': '2023-06-01',
-      },
-      body: JSON.stringify({
-        model: this.model,
-        max_tokens: options.maxTokens ?? 8192,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userContent }],
-      }),
-    });
+    let lastError;
+    for (let attempt = 0; attempt <= 2; attempt++) {
+      let response;
+      try {
+        response = await fetch('https://api.anthropic.com/v1/messages', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'x-api-key': this.apiKey,
+            'anthropic-version': '2023-06-01',
+          },
+          body: JSON.stringify({
+            model: this.model,
+            max_tokens: options.maxTokens ?? 8192,
+            temperature: options.temperature,
+            system: systemPrompt,
+            messages: [{ role: 'user', content: userContent }],
+          }),
+        });
+      } catch (networkErr) {
+        lastError = networkErr;
+        if (attempt < 2) await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+        continue;
+      }
 
-    if (!response.ok) {
-      const errBody = await response.text();
-      throw new Error(`Anthropic API ${response.status}: ${errBody}`);
+      if (response.status === 429) {
+        lastError = new Error(`Anthropic API 429: rate limited after ${attempt + 1} attempt(s)`);
+        const waitMs = Math.min(1000 * Math.pow(2, attempt), 10000);
+        await new Promise(r => setTimeout(r, waitMs));
+        continue;
+      }
+
+      if (!response.ok) {
+        const errBody = await response.text();
+        throw new Error(`Anthropic API ${response.status}: ${errBody}`);
+      }
+
+      return await response.json();
     }
-
-    return await response.json();
+    throw lastError;
   }
 }

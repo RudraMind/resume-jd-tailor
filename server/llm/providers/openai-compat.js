@@ -58,6 +58,7 @@ export class OpenAICompatAdapter extends LLMAdapter {
       }
 
       if (response.status === 429) {
+        lastError = new Error(`API 429: rate limited after ${attempt + 1} attempt(s)`);
         const waitMs = Math.min(1000 * Math.pow(2, attempt), 10000);
         await new Promise(r => setTimeout(r, waitMs));
         continue;

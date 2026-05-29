@@ -1,5 +1,10 @@
+import { createRequire } from 'module';
+import { fileURLToPath } from 'url';
+import path from 'path';
 import dotenv from 'dotenv';
-dotenv.config({ path: '../.env' });
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
+dotenv.config({ path: path.resolve(__dirname, '../.env') });
 
 const REQUIRED_KEYS = {
   gemini: 'GEMINI_API_KEY',
