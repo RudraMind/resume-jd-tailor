@@ -1,54 +1,29 @@
-import { useState } from 'react';
 import InputScreen from './components/InputScreen.jsx';
 import PipelineProgress from './components/PipelineProgress.jsx';
-
-// ResultsView imported in Phase 5 — placeholder until then
-const ResultsView = null;
+import ResultsView from './components/ResultsView.jsx';
+import { usePipeline } from './hooks/usePipeline.js';
 
 export default function App() {
-  const [pipelineState, setPipelineState] = useState(null);
+  const { state, runPipeline, reset } = usePipeline();
+  const { status, currentStep, attempt, error, outputs } = state;
 
-  const handleRun = (inputs) => {
-    setPipelineState({
-      status: 'idle',
-      inputs,
-      currentStep: null,
-      attempt: 0,
-      error: null,
-      outputs: {},
-    });
-  };
-
-  const handleReset = () => setPipelineState(null);
-
-  if (!pipelineState) {
-    return <InputScreen onRun={handleRun} />;
+  if (status === 'idle') {
+    return <InputScreen onRun={runPipeline} />;
   }
 
   return (
-    <div>
+    <div className="min-h-screen bg-gray-50">
       <PipelineProgress
-        status={pipelineState.status}
-        currentStep={pipelineState.currentStep}
-        attempt={pipelineState.attempt}
-        error={pipelineState.error}
+        status={status}
+        currentStep={currentStep}
+        attempt={attempt}
+        error={error}
       />
-
-      {ResultsView && pipelineState.outputs != null ? (
-        <ResultsView outputs={pipelineState.outputs} onReset={handleReset} />
-      ) : (
-        <div className="max-w-4xl mx-auto px-6 py-8">
-          <p className="text-gray-500 text-sm text-center">
-            Pipeline wiring coming in Phase 5...
-          </p>
-          <button
-            onClick={handleReset}
-            className="mt-4 mx-auto block text-sm text-purple-600 underline"
-          >
-            Reset
-          </button>
-        </div>
-      )}
+      <ResultsView
+        outputs={outputs}
+        attempt={attempt}
+        onReset={status === 'complete' || status === 'error' ? reset : null}
+      />
     </div>
   );
 }
