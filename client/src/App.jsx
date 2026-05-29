@@ -2,16 +2,8 @@ import { useState } from 'react';
 import InputScreen from './components/InputScreen.jsx';
 import PipelineProgress from './components/PipelineProgress.jsx';
 
-// ResultsView will be wired in Phase 5.
-// Stub prevents import errors when the file does not exist yet.
-let ResultsView = null;
-try {
-  // Dynamic require used to avoid compile-time failure on missing module.
-  // Will be replaced with a static import once ResultsView is created.
-  ResultsView = require('./components/ResultsView.jsx').default;
-} catch (_) {
-  // not yet built — renders placeholder below
-}
+// ResultsView imported in Phase 5 — placeholder until then
+const ResultsView = null;
 
 export default function App() {
   const [pipelineState, setPipelineState] = useState(null);
