@@ -1,4 +1,4 @@
-import CopyButton from '../ui/CopyButton.jsx';
+import CopyButton from './ui/CopyButton.jsx';
 import JDAnalysis from './steps/JDAnalysis.jsx';
 import ATSCheck from './steps/ATSCheck.jsx';
 import ResumeMatch from './steps/ResumeMatch.jsx';
