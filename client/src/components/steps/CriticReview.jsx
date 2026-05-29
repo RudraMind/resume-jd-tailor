@@ -14,7 +14,7 @@ export default function CriticReview({ data, attempt }) {
   if (!data) return null;
 
   return (
-    <Card>
+    <Card className="animate-fade-in-up">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <MessageCircle size={18} className="text-indigo-600" />

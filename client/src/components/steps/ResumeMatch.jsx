@@ -10,7 +10,7 @@ export default function ResumeMatch({ data }) {
   const copyText = `Resume Match Score: ${data.overall_score}/100\n\n${data.summary}`;
 
   return (
-    <Card>
+    <Card className="animate-fade-in-up">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Search size={18} className="text-blue-600" />

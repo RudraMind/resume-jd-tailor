@@ -1,3 +1,4 @@
+import CopyButton from '../ui/CopyButton.jsx';
 import JDAnalysis from './steps/JDAnalysis.jsx';
 import ATSCheck from './steps/ATSCheck.jsx';
 import ResumeMatch from './steps/ResumeMatch.jsx';
@@ -7,8 +8,20 @@ import CriticReview from './steps/CriticReview.jsx';
 import RevisionSummary from './steps/RevisionSummary.jsx';
 
 export default function ResultsView({ outputs, attempt, onReset }) {
+  const allText = [
+    `JD Analysis: ${outputs.jdAnalysis?.role_title ?? ''} | ${outputs.jdAnalysis?.seniority_level ?? ''} | Keywords: ${outputs.jdAnalysis?.top_keywords?.join(', ') ?? ''}`,
+    `ATS Score: ${outputs.atsCheck?.score ?? ''}`,
+    `Resume Match Score: ${outputs.resumeMatch?.overall_score ?? ''} — ${outputs.resumeMatch?.summary ?? ''}`,
+    `Rewritten Bullets:\n${outputs.rewrittenBullets?.rewritten_bullets?.map(b => b.rewritten).join('\n') ?? ''}`,
+    `Critic Score: ${outputs.criticReview?.score ?? ''} — ${outputs.criticReview?.overall_assessment ?? ''}`,
+  ].join('\n\n');
+
   return (
     <div className="max-w-4xl mx-auto px-6 py-8 space-y-6">
+      <div className="flex items-center justify-between">
+        <span className="text-sm font-medium text-gray-500">Copy All Results</span>
+        <CopyButton text={allText} />
+      </div>
       <JDAnalysis data={outputs.jdAnalysis} />
       <ATSCheck data={outputs.atsCheck} />
       <ResumeMatch data={outputs.resumeMatch} />

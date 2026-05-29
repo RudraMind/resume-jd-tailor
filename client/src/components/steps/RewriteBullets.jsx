@@ -11,7 +11,7 @@ export default function RewriteBullets({ data }) {
     .join('\n') ?? '';
 
   return (
-    <Card>
+    <Card className="animate-fade-in-up">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Pencil size={18} className="text-orange-500" />

@@ -13,7 +13,7 @@ export default function JDAnalysis({ data }) {
   const copyText = JSON.stringify(data, null, 2);
 
   return (
-    <Card>
+    <Card className="animate-fade-in-up">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <FileSearch size={18} className="text-purple-600" />

@@ -2,6 +2,12 @@
 @tailwind components;
 @tailwind utilities;
 
+@keyframes fadeInUp {
+  from { opacity: 0; transform: translateY(8px); }
+  to { opacity: 1; transform: translateY(0); }
+}
+.animate-fade-in-up { animation: fadeInUp 300ms ease-out forwards; }
+
 :root {
   --color-brand-purple: #6C3FC5;
   --color-brand-blue: #3B82F6;

@@ -5,7 +5,7 @@ export default function RevisionSummary({ data }) {
   if (!data) return null;
 
   return (
-    <Card className="border-2 border-purple-100">
+    <Card className="border-2 border-purple-100 animate-fade-in-up">
       <div className="flex items-center gap-2 mb-4">
         <Trophy size={18} className="text-amber-500" />
         <h2 className="font-semibold text-gray-800">Revision Summary</h2>

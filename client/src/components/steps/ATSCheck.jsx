@@ -12,7 +12,7 @@ export default function ATSCheck({ data }) {
   if (!data) return null;
 
   return (
-    <Card>
+    <Card className="animate-fade-in-up">
       <div className="flex items-center gap-2 mb-4">
         <ShieldCheck size={18} className="text-green-600" />
         <h2 className="font-semibold text-gray-800">ATS Compatibility Check</h2>

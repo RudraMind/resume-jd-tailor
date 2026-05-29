@@ -8,7 +8,7 @@ export default function AIPhraseCleanup({ data }) {
   const cleanedText = data.cleaned?.map(b => b.cleaned || '').join('\n') ?? '';
 
   return (
-    <Card>
+    <Card className="animate-fade-in-up">
       <div className="flex items-center justify-between mb-4">
         <div className="flex items-center gap-2">
           <Sparkles size={18} className="text-violet-500" />
