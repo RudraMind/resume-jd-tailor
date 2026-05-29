@@ -1,0 +1,22 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --color-brand-purple: #6C3FC5;
+  --color-brand-blue: #3B82F6;
+  --color-score-red: #EF4444;
+  --color-score-amber: #F59E0B;
+  --color-score-green: #22C55E;
+}
+
+* {
+  box-sizing: border-box;
+}
+
+body {
+  font-family: 'Outfit', system-ui, sans-serif;
+  background-color: #F9FAFB;
+  color: #111827;
+  margin: 0;
+}
