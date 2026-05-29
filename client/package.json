@@ -1,6 +1,7 @@
 {
   "name": "resume-jd-tailor-client",
   "private": true,
+  "type": "module",
   "scripts": {
     "dev": "vite",
     "build": "vite build"
