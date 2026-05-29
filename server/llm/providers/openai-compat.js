@@ -41,8 +41,9 @@ export class OpenAICompatAdapter extends LLMAdapter {
 
     let lastError;
     for (let attempt = 0; attempt <= 2; attempt++) {
+      let response;
       try {
-        const response = await fetch(url, {
+        response = await fetch(url, {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
@@ -50,23 +51,24 @@ export class OpenAICompatAdapter extends LLMAdapter {
           },
           body: JSON.stringify(body),
         });
-
-        if (response.status === 429) {
-          const waitMs = Math.min(1000 * Math.pow(2, attempt), 10000);
-          await new Promise(r => setTimeout(r, waitMs));
-          continue;
-        }
-
-        if (!response.ok) {
-          const errBody = await response.text();
-          throw new Error(`API ${response.status}: ${errBody}`);
-        }
-
-        return await response.json();
-      } catch (err) {
-        lastError = err;
+      } catch (networkErr) {
+        lastError = networkErr;
         if (attempt < 2) await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+        continue;
       }
+
+      if (response.status === 429) {
+        const waitMs = Math.min(1000 * Math.pow(2, attempt), 10000);
+        await new Promise(r => setTimeout(r, waitMs));
+        continue;
+      }
+
+      if (!response.ok) {
+        const errBody = await response.text();
+        throw new Error(`API ${response.status}: ${errBody}`);
+      }
+
+      return await response.json();
     }
     throw lastError;
   }

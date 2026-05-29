@@ -45,31 +45,31 @@ export class GeminiAdapter extends LLMAdapter {
   async _fetchWithRetry(url, body, maxRetries = 2) {
     let lastError;
     for (let attempt = 0; attempt <= maxRetries; attempt++) {
+      let response;
       try {
-        const response = await fetch(url, {
+        response = await fetch(url, {
           method: 'POST',
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify(body),
         });
-
-        if (response.status === 429) {
-          const waitMs = Math.min(1000 * Math.pow(2, attempt), 10000);
-          await new Promise(r => setTimeout(r, waitMs));
-          continue;
-        }
-
-        if (!response.ok) {
-          const errBody = await response.text();
-          throw new Error(`Gemini API ${response.status}: ${errBody}`);
-        }
-
-        return await response.json();
-      } catch (err) {
-        lastError = err;
-        if (attempt < maxRetries) {
-          await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
-        }
+      } catch (networkErr) {
+        lastError = networkErr;
+        if (attempt < maxRetries) await new Promise(r => setTimeout(r, 1000 * (attempt + 1)));
+        continue;
       }
+
+      if (response.status === 429) {
+        const waitMs = Math.min(1000 * Math.pow(2, attempt), 10000);
+        await new Promise(r => setTimeout(r, waitMs));
+        continue;
+      }
+
+      if (!response.ok) {
+        const errBody = await response.text();
+        throw new Error(`Gemini API ${response.status}: ${errBody}`);
+      }
+
+      return await response.json();
     }
     throw lastError;
   }
