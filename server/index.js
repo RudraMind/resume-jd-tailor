@@ -1,7 +1,7 @@
+import './config.js';
 import express from 'express';
 import cors from 'cors';
 import { pipelineRouter } from './routes/pipeline.js';
-import './config.js';
 
 const app = express();
 app.use(cors());

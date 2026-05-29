@@ -37,27 +37,32 @@ pipelineRouter.post('/:stepName', async (req, res) => {
       }
 
       case 'rewrite-bullets': {
-        const { resume, jd, jdAnalysis, matchResult, intensity, criticFeedback } = req.body;
+        const { jdAnalysis, matchResult, intensity, criticFeedback } = req.body;
+        const resumeSanitized = sanitizeInput(req.body.resume);
+        const jdSanitized = sanitizeInput(req.body.jd);
+        const { text: resume } = truncateIfNeeded(resumeSanitized, 'Resume');
+        const { text: jd } = truncateIfNeeded(jdSanitized, 'JD');
         const tempMap = { nudge: 0.4, keywords: 0.5, full: 0.6 };
+        if (!['nudge', 'keywords', 'full'].includes(intensity)) {
+          return res.status(400).json({ success: false, error: `Invalid intensity: ${intensity}. Use nudge, keywords, or full.` });
+        }
         result = await llm.completeJSON(
-          REWRITE_SYSTEM(intensity || 'keywords'),
-          REWRITE_BULLETS_USER(
-            sanitizeInput(resume), sanitizeInput(jd),
-            jdAnalysis, matchResult, intensity || 'keywords', criticFeedback
-          ),
-          { temperature: tempMap[intensity] || 0.5, maxTokens: 8192 }
+          REWRITE_SYSTEM(intensity),
+          REWRITE_BULLETS_USER(resume, jd, jdAnalysis, matchResult, intensity, criticFeedback),
+          { temperature: tempMap[intensity], maxTokens: 8192 }
         );
         break;
       }
 
       case 'critic-review': {
-        const { resume, jd, jdAnalysis, matchResult, rewrittenBullets, attempt } = req.body;
+        const { jdAnalysis, matchResult, rewrittenBullets, attempt } = req.body;
+        const resumeSanitized = sanitizeInput(req.body.resume);
+        const jdSanitized = sanitizeInput(req.body.jd);
+        const { text: resume } = truncateIfNeeded(resumeSanitized, 'Resume');
+        const { text: jd } = truncateIfNeeded(jdSanitized, 'JD');
         result = await llm.completeJSON(
           CRITIC_SYSTEM,
-          CRITIC_USER(
-            sanitizeInput(resume), sanitizeInput(jd),
-            jdAnalysis, matchResult, rewrittenBullets, attempt || 1
-          ),
+          CRITIC_USER(resume, jd, jdAnalysis, matchResult, rewrittenBullets, attempt || 1),
           { temperature: 0.3 }
         );
         break;
