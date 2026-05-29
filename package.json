@@ -2,7 +2,7 @@
   "name": "resume-jd-tailor",
   "private": true,
   "scripts": {
-    "predev": "powershell -Command \"Get-NetTCPConnection -LocalPort 3001,5173,5174,5175 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }\"",
+    "predev": "powershell -Command \"Get-NetTCPConnection -LocalPort 3001,5173,5174,5175 -ErrorAction SilentlyContinue | ForEach-Object { Stop-Process -Id $_.OwningProcess -Force -ErrorAction SilentlyContinue }; exit 0\"",
     "dev": "concurrently \"npm run dev:server\" \"npm run dev:client\"",
     "dev:client": "cd client && npm run dev",
     "dev:server": "cd server && npm run dev",
