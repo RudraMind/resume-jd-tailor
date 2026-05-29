@@ -45,7 +45,7 @@ export function cleanAIPhrases(bullets, jdText = '') {
     text = text.replace(/\s{2,}/g, ' ').trim();
     if (bulletReplacements.length > 0) allReplacements.push(...bulletReplacements);
 
-    return { ...bullet, cleaned: text, phraseReplacements: bulletReplacements };
+    return { ...(typeof bullet === 'object' ? bullet : {}), cleaned: text, phraseReplacements: bulletReplacements };
   });
 
   return { cleaned, replacements: allReplacements, count: allReplacements.length };
