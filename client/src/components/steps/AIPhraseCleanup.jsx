@@ -28,7 +28,7 @@ export default function AIPhraseCleanup({ data }) {
             <span className="font-semibold text-violet-700">{data.count}</span> AI phrase{data.count !== 1 ? 's' : ''} replaced
           </p>
           <div className="space-y-1">
-            {data.replacements.map((r, i) => (
+            {data.replacements?.map((r, i) => (
               <div key={i} className="flex items-center gap-2 text-sm">
                 <span className="line-through text-red-400">{r.original}</span>
                 <span className="text-gray-400">→</span>

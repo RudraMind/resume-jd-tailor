@@ -26,10 +26,10 @@ export default function ATSCheck({ data }) {
         <div>
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Issues</p>
           <div className="space-y-2">
-            {data.issues.length === 0 && (
+            {(data.issues?.length ?? 0) === 0 && (
               <p className="text-sm text-gray-400">No issues found</p>
             )}
-            {data.issues.map((issue, i) => {
+            {data.issues?.map((issue, i) => {
               const cfg = SEVERITY_CONFIG[issue.severity] ?? SEVERITY_CONFIG.info;
               return (
                 <div key={i} className={`p-3 rounded-lg border ${cfg.bg} ${cfg.border}`}>
@@ -49,7 +49,7 @@ export default function ATSCheck({ data }) {
         <div>
           <p className="text-xs font-semibold text-gray-500 uppercase tracking-wide mb-3">Passes</p>
           <div className="space-y-2">
-            {data.passes.map((pass, i) => (
+            {data.passes?.map((pass, i) => (
               <div key={i} className="flex items-center gap-2 p-2 rounded-lg bg-green-50 border border-green-200">
                 <CheckCircle size={14} className="text-green-500 shrink-0" />
                 <p className="text-sm text-gray-700">{pass.message}</p>

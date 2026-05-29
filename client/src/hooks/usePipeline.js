@@ -43,10 +43,10 @@ function reducer(state, action) {
   }
 }
 
-function compileSummary(attempt, outputs) {
+function compileSummary(attempt, outputs, scores = []) {
   return {
     totalAttempts: attempt,
-    scores: [],
+    scores,
     finalScore: outputs.criticReview?.score ?? 0,
     passed: (outputs.criticReview?.score ?? 0) >= 8,
     keyChanges: attempt === 1
@@ -66,6 +66,7 @@ export function usePipeline() {
     let criticFeedback = null;
     let bestScore = 0;
     let bestOutputs = null;
+    const scoreHistory = [];
 
     while (attempt < 3) {
       attempt++;
@@ -120,9 +121,10 @@ export function usePipeline() {
           bestScore = criticReview.score;
           bestOutputs = currentOutputs;
         }
+        scoreHistory.push({ attempt, score: criticReview.score });
 
         if (criticReview.score >= 8) {
-          const summary = compileSummary(attempt, bestOutputs);
+          const summary = compileSummary(attempt, bestOutputs, scoreHistory);
           dispatch({ type: 'SET_OUTPUT', key: 'revisionSummary', value: summary });
           dispatch({ type: 'COMPLETE' });
           return;
@@ -142,7 +144,7 @@ export function usePipeline() {
         dispatch({ type: 'SET_OUTPUT', key, value });
       }
     }
-    const summary = compileSummary(3, bestOutputs ?? {});
+    const summary = compileSummary(3, bestOutputs ?? {}, scoreHistory);
     dispatch({ type: 'SET_OUTPUT', key: 'revisionSummary', value: summary });
     dispatch({ type: 'COMPLETE' });
   }, []);

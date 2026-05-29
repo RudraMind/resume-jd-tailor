@@ -7,7 +7,7 @@ export default function RewriteBullets({ data }) {
   if (!data) return null;
 
   const allRewritten = data.rewritten_bullets
-    ?.map(b => b.rewritten || b.cleaned || '')
+    ?.map(b => b.rewritten || '')
     .join('\n') ?? '';
 
   return (
