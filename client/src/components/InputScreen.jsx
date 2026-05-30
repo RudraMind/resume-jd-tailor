@@ -1,5 +1,24 @@
 import { useState } from 'react';
-import { FileText, ClipboardList, Rocket } from 'lucide-react';
+import { FileText, ClipboardList, Rocket, Cpu } from 'lucide-react';
+
+const MODEL_OPTIONS = [
+  // FREE — confirmed on OpenRouter
+  { label: 'Nemotron 3 Super (free)',  slug: 'nvidia/nemotron-3-super-120b-a12b:free', context: '262K', price: 'Free' },
+  // CHEAP PAID — confirmed on OpenRouter
+  { label: 'DeepSeek V4 Flash ⭐',    slug: 'deepseek/deepseek-v4-flash',              context: '1M',   price: '$0.10/1M' },
+  { label: 'Qwen 3.5 Flash',          slug: 'qwen/qwen3.5-flash-02-23',                context: '1M',   price: '$0.065/1M' },
+  { label: 'DeepSeek V3 0324',        slug: 'deepseek/deepseek-chat-v3-0324',          context: '164K', price: '$0.20/1M' },
+  // STANDARD PAID
+  { label: 'GPT-4o Mini',             slug: 'openai/gpt-4o-mini',                      context: '128K', price: '$0.15/1M' },
+  { label: 'GPT-4o',                  slug: 'openai/gpt-4o',                           context: '128K', price: '$2.50/1M' },
+  { label: 'DeepSeek R1',             slug: 'deepseek/deepseek-r1',                    context: '164K', price: '$0.55/1M' },
+  { label: 'Llama 3.3 70B',          slug: 'meta-llama/llama-3.3-70b-instruct',        context: '128K', price: '$0.12/1M' },
+  { label: 'Gemini 2.0 Flash',        slug: 'google/gemini-2.0-flash',                 context: '1M',   price: '$0.10/1M' },
+  // PREMIUM
+  { label: 'Gemini 2.5 Pro',          slug: 'google/gemini-2.5-pro',                   context: '128K', price: '~$0.45/run' },
+];
+
+const DEFAULT_MODEL = 'deepseek/deepseek-v4-flash';
 
 const INTENSITY_OPTIONS = [
   {
@@ -19,16 +38,37 @@ const INTENSITY_OPTIONS = [
   },
 ];
 
+const STORAGE_KEY = 'rjt_last_resume';
+
 export default function InputScreen({ onRun }) {
-  const [resume, setResume] = useState('');
+  const [resume, setResume] = useState(() => localStorage.getItem(STORAGE_KEY) || '');
   const [jd, setJd] = useState('');
+  const [resumePreFilled, setResumePreFilled] = useState(
+    () => (localStorage.getItem(STORAGE_KEY) || '').length > 0
+  );
   const [intensity, setIntensity] = useState('keywords');
   const [targetRole, setTargetRole] = useState('');
+  const [model, setModel] = useState(DEFAULT_MODEL);
+  const [retryModel, setRetryModel] = useState(DEFAULT_MODEL);
+  const [retryModelCustomized, setRetryModelCustomized] = useState(false);
+
+  const handleModelChange = (val) => {
+    setModel(val);
+    if (!retryModelCustomized) setRetryModel(val);
+  };
+
+  const handleRetryModelChange = (val) => {
+    setRetryModel(val);
+    setRetryModelCustomized(true);
+  };
 
   const canRun = resume.trim().length > 0 && jd.trim().length > 0;
 
   const handleRun = () => {
-    if (canRun) onRun({ resume, jd, intensity, targetRole });
+    if (canRun) {
+      localStorage.setItem(STORAGE_KEY, resume);
+      onRun({ resume, jd, intensity, targetRole, model, retryModel });
+    }
   };
 
   return (
@@ -54,11 +94,16 @@ export default function InputScreen({ onRun }) {
             <label className="flex items-center gap-2 text-sm font-semibold text-gray-700">
               <FileText size={16} className="text-purple-600" />
               Your Resume
+              {resumePreFilled && (
+                <span className="ml-1 px-2 py-0.5 text-xs font-medium rounded-full bg-purple-100 text-purple-600">
+                  Last used
+                </span>
+              )}
             </label>
             <div className="relative">
               <textarea
                 value={resume}
-                onChange={e => setResume(e.target.value)}
+                onChange={e => { setResume(e.target.value); setResumePreFilled(false); }}
                 placeholder="Paste your full resume text here..."
                 className="w-full min-h-[300px] p-4 font-mono text-sm border border-gray-200 rounded-lg resize-y focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white"
               />
@@ -113,6 +158,46 @@ export default function InputScreen({ onRun }) {
                 </div>
               </label>
             ))}
+          </div>
+        </div>
+
+        {/* Model Selectors */}
+        <div className="grid grid-cols-2 gap-4">
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700">
+              <Cpu size={14} className="text-purple-600" />
+              AI Model
+            </label>
+            <p className="text-xs text-gray-400">Attempts 1 &amp; 2</p>
+            <select
+              value={model}
+              onChange={e => handleModelChange(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-purple-400 bg-white text-gray-800"
+            >
+              {MODEL_OPTIONS.map(opt => (
+                <option key={opt.slug} value={opt.slug}>
+                  {opt.label} · {opt.context} · {opt.price}
+                </option>
+              ))}
+            </select>
+          </div>
+          <div className="space-y-1.5">
+            <label className="flex items-center gap-1.5 text-sm font-semibold text-gray-700">
+              <Cpu size={14} className="text-amber-500" />
+              3rd Retry Model
+            </label>
+            <p className="text-xs text-gray-400">Used if score &lt; 8 after 2 attempts</p>
+            <select
+              value={retryModel}
+              onChange={e => handleRetryModelChange(e.target.value)}
+              className="w-full px-3 py-2 border border-gray-200 rounded-lg text-sm focus:outline-none focus:ring-2 focus:ring-amber-400 bg-white text-gray-800"
+            >
+              {MODEL_OPTIONS.map(opt => (
+                <option key={opt.slug} value={opt.slug}>
+                  {opt.label} · {opt.context} · {opt.price}
+                </option>
+              ))}
+            </select>
           </div>
         </div>
 

@@ -3,11 +3,13 @@ import { callStep } from '../api.js';
 import { checkATSCompatibility } from '../lib/ats-checker.js';
 import { cleanAIPhrases } from '../lib/ai-phrase-cleaner.js';
 
+const DEFAULT_MODEL = 'deepseek/deepseek-v4-flash';
+
 const INITIAL_STATE = {
   status: 'idle',
   currentStep: null,
   attempt: 0,
-  inputs: { resume: '', jd: '', intensity: 'keywords', targetRole: '' },
+  inputs: { resume: '', jd: '', intensity: 'keywords', targetRole: '', model: DEFAULT_MODEL, retryModel: DEFAULT_MODEL },
   outputs: {
     jdAnalysis: null,
     atsCheck: null,
@@ -63,7 +65,7 @@ export function usePipeline() {
     const runId = ++runIdRef.current;
     dispatch({ type: 'START', inputs });
 
-    const { resume, jd, intensity } = inputs;
+    const { resume, jd, intensity, model, retryModel } = inputs;
     let attempt = 0;
     let criticFeedback = null;
     let bestScore = 0;
@@ -74,13 +76,14 @@ export function usePipeline() {
       attempt++;
       dispatch({ type: 'SET_ATTEMPT', attempt });
 
+      const activeModel = attempt === 3 ? retryModel : model;
       let currentStepLocal = null;
 
       try {
         // Step 1: JD Analysis
         currentStepLocal = 'jd-analysis';
         dispatch({ type: 'SET_STEP', step: currentStepLocal });
-        const jdAnalysis = await callStep('jd-analysis', { jd });
+        const jdAnalysis = await callStep('jd-analysis', { jd, model: activeModel });
         if (runIdRef.current !== runId) return;
         dispatch({ type: 'SET_OUTPUT', key: 'jdAnalysis', value: jdAnalysis });
 
@@ -93,7 +96,7 @@ export function usePipeline() {
         // Step 3: Resume Match
         currentStepLocal = 'resume-match';
         dispatch({ type: 'SET_STEP', step: currentStepLocal });
-        const resumeMatch = await callStep('resume-match', { resume, jd, jdAnalysis });
+        const resumeMatch = await callStep('resume-match', { resume, jd, jdAnalysis, model: activeModel });
         if (runIdRef.current !== runId) return;
         dispatch({ type: 'SET_OUTPUT', key: 'resumeMatch', value: resumeMatch });
 
@@ -101,7 +104,7 @@ export function usePipeline() {
         currentStepLocal = 'rewrite-bullets';
         dispatch({ type: 'SET_STEP', step: currentStepLocal });
         const rewrittenBullets = await callStep('rewrite-bullets', {
-          resume, jd, jdAnalysis, matchResult: resumeMatch, intensity, criticFeedback,
+          resume, jd, jdAnalysis, matchResult: resumeMatch, intensity, criticFeedback, model: activeModel,
         });
         if (runIdRef.current !== runId) return;
         dispatch({ type: 'SET_OUTPUT', key: 'rewrittenBullets', value: rewrittenBullets });
@@ -116,7 +119,7 @@ export function usePipeline() {
         currentStepLocal = 'critic-review';
         dispatch({ type: 'SET_STEP', step: currentStepLocal });
         const criticReview = await callStep('critic-review', {
-          resume, jd, jdAnalysis, matchResult: resumeMatch, rewrittenBullets, attempt,
+          resume, jd, jdAnalysis, matchResult: resumeMatch, rewrittenBullets, attempt, model: activeModel,
         });
         if (runIdRef.current !== runId) return;
         dispatch({ type: 'SET_OUTPUT', key: 'criticReview', value: criticReview });

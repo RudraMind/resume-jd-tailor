@@ -8,17 +8,16 @@ const PROVIDER_DEFAULTS = {
   anthropic: { model: 'claude-sonnet-4-20250514' },
   groq:      { model: 'llama-3.3-70b-versatile', baseUrl: 'https://api.groq.com/openai/v1' },
   ollama:    { model: 'llama3.1', baseUrl: 'http://localhost:11434/v1' },
-  openrouter:{ model: 'google/gemini-2.0-flash-exp:free', baseUrl: 'https://openrouter.ai/api/v1' },
+  openrouter:{ model: 'deepseek/deepseek-v4-flash', baseUrl: 'https://openrouter.ai/api/v1' },
 };
 
-export function createLLMProvider() {
+export function createLLMProvider(requestModel) {
   const provider = process.env.LLM_PROVIDER || 'gemini';
-  const modelOverride = process.env.LLM_MODEL || null;
   const defaults = PROVIDER_DEFAULTS[provider];
 
   if (!defaults) throw new Error(`Unknown LLM_PROVIDER: ${provider}. Options: ${Object.keys(PROVIDER_DEFAULTS).join(', ')}`);
 
-  const model = modelOverride || defaults.model;
+  const model = requestModel || process.env.LLM_MODEL || defaults.model;
 
   switch (provider) {
     case 'gemini':

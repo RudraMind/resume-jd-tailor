@@ -7,12 +7,12 @@ import { REWRITE_SYSTEM, REWRITE_BULLETS_USER } from '../prompts/rewrite-bullets
 import { CRITIC_SYSTEM, CRITIC_USER } from '../prompts/critic-review.js';
 
 export const pipelineRouter = Router();
-const llm = createLLMProvider();
 
 pipelineRouter.post('/:stepName', async (req, res) => {
   const { stepName } = req.params;
 
   try {
+    const llm = createLLMProvider(req.body.model || null);
     let result;
 
     switch (stepName) {
